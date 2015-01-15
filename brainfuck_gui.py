@@ -84,11 +84,13 @@ class BFMemory(wx.Panel):
 
 
 class BrainfuckGUI(wx.Frame):
+    bf_run = False
+
     def __init__(self, *args, **kwargs):
         super(BrainfuckGUI, self).__init__(*args, **kwargs)
 
         self.bf = brainfuck.Brainfucker(memory=512 * 512)
-
+    
         self.initUI()
 
     def initUI(self):
@@ -163,8 +165,11 @@ class BrainfuckGUI(wx.Frame):
         self.buttons['step'] = wx.Button(parent, label="Step")
         self.Bind(wx.EVT_BUTTON, self.OnStep, self.buttons['step'])
 
-        #self.buttons['run'] = wx.Button(parent, label="Run")
-        #self.Bind(wx.EVT_BUTTON, self.OnRun, self.buttons['run'])
+        self.buttons['run'] = wx.Button(parent, label="Run")
+        self.Bind(wx.EVT_BUTTON, self.OnRun, self.buttons['run'])
+
+        self.buttons['stop'] = wx.Button(parent, label="Stop")
+        self.Bind(wx.EVT_BUTTON, self.OnStop, self.buttons['stop'])
 
         self.buttons['reset'] = wx.Button(parent, label="Reset")
         self.Bind(wx.EVT_BUTTON, self.OnReset, self.buttons['reset'])
@@ -176,7 +181,8 @@ class BrainfuckGUI(wx.Frame):
         label = wx.StaticText(parent, label="Actions")
         sizer.Add(label, 0)
         sizer.Add(self.buttons['step'], 0)
-        #sizer.Add(self.buttons['run'], 0)
+        sizer.Add(self.buttons['run'], 0)
+        sizer.Add(self.buttons['stop'], 0)
         sizer.Add(self.buttons['reset'], 0)
         sizer.Add(self.buttons['program'], 0)
         return sizer
@@ -196,15 +202,24 @@ class BrainfuckGUI(wx.Frame):
         self.bf.step()
         self.updateStatus()
 
+        if self.bf_run:
+            wx.CallLater(500, self.OnStep, None)
+
     def OnReset(self, e):
         self.bf.reset()
         self.updateStatus()
 
     def OnRun(self, e):
-        self.bf.run()
+        self.bf_run = True
+        self.OnStep(None)
+
+    def OnStop(self, e):
+        self.bf_run = False
+        self.updateStatus()
 
     def OnProgram(self, e):
         self.bf.program(self.editor.GetValue())
+        self.updateStatus()
 
     def OnQuit(self, e):
         self.Close()
