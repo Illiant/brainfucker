@@ -75,7 +75,7 @@ class BFMemory(wx.Panel):
     def update(self):
         self.Refresh()
         self.Update()
-        wx.CallLater(15, self.update)
+        #wx.CallLater(15, self.update)
 
     def onPaint(self, event):
         bitmap = self.create_bitmap()
@@ -87,10 +87,11 @@ class BrainfuckGUI(wx.Frame):
     bf_run = False
 
     def __init__(self, *args, **kwargs):
+        kwargs['size'] = (860, 480)
         super(BrainfuckGUI, self).__init__(*args, **kwargs)
 
         self.bf = brainfuck.Brainfucker(memory=512 * 512)
-    
+
         self.initUI()
 
     def initUI(self):
@@ -149,7 +150,8 @@ class BrainfuckGUI(wx.Frame):
         Inits the graphical output window
         """
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(BFMemory(parent=parent, fucker=self.bf),
+        self.canvas = BFMemory(parent=parent, fucker=self.bf)
+        sizer.Add(self.canvas,
                   1,
                   wx.EXPAND | wx.ALL,
                   5)
@@ -185,6 +187,11 @@ class BrainfuckGUI(wx.Frame):
         sizer.Add(self.buttons['stop'], 0)
         sizer.Add(self.buttons['reset'], 0)
         sizer.Add(self.buttons['program'], 0)
+
+        self.buttons['speed'] = wx.Slider(parent, id=wx.ID_ANY,
+                                          value=500, minValue=1, maxValue=1000)
+        sizer.Add(wx.StaticText(parent, label="Speed"))
+        sizer.Add(self.buttons['speed'], 0)
         return sizer
 
     def updateStatus(self):
@@ -201,9 +208,11 @@ class BrainfuckGUI(wx.Frame):
     def OnStep(self, e):
         self.bf.step()
         self.updateStatus()
+        self.canvas.update()
 
         if self.bf_run:
-            wx.CallLater(500, self.OnStep, None)
+            w = self.buttons['speed'].maxValue - self.buttons['speed'].GetValue()
+            wx.CallLater(w, self.OnStep, None)
 
     def OnReset(self, e):
         self.bf.reset()
