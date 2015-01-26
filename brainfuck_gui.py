@@ -124,7 +124,7 @@ class BrainfuckGUI(wx.Frame):
         editor = self.initEditor(panel)
         hbox.Add(editor, 1, wx.EXPAND | wx.ALL, 10)
 
-        buttons = self.initButtons(panel)
+        buttons = self.initFunctions(panel)
         hbox.Add(buttons, 0, wx.EXPAND | wx.ALL, 10)
 
         output = self.initOutput(panel)
@@ -158,7 +158,7 @@ class BrainfuckGUI(wx.Frame):
 
         return sizer
 
-    def initButtons(self, parent):
+    def initFunctions(self, parent):
         """
         Inits a bar of buttons for doing stuff
         """
@@ -188,10 +188,16 @@ class BrainfuckGUI(wx.Frame):
         sizer.Add(self.buttons['reset'], 0)
         sizer.Add(self.buttons['program'], 0)
 
-        self.buttons['speed'] = wx.Slider(parent, id=wx.ID_ANY,
-                                          value=500, minValue=1, maxValue=1000)
-        sizer.Add(wx.StaticText(parent, label="Speed"))
-        sizer.Add(self.buttons['speed'], 0)
+        self.buttons['speed'] = wx.Slider(parent, id=wx.ID_ANY)
+        self.buttons['speed'].SetMax(1000)
+        self.buttons['speed'].SetMin(1)
+        self.buttons['speed'].SetValue(500)
+        sizer.Add(wx.StaticText(parent, label="Run speed"))
+        sizer.Add(self.buttons['speed'], 0, wx.EXPAND)
+
+        sizer.Add(wx.StaticText(parent, label="Memory size"))
+        sizer.Add(wx.TextCtrl(parent))
+        sizer.Add(wx.TextCtrl(parent))
         return sizer
 
     def updateStatus(self):
@@ -211,7 +217,7 @@ class BrainfuckGUI(wx.Frame):
         self.canvas.update()
 
         if self.bf_run:
-            w = self.buttons['speed'].maxValue - self.buttons['speed'].GetValue()
+            w = self.buttons['speed'].GetMax() - self.buttons['speed'].GetValue()
             wx.CallLater(w, self.OnStep, None)
 
     def OnReset(self, e):
